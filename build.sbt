@@ -1,10 +1,16 @@
 name := "pushpop"
 
+organization := "org.michajlo"
+
 version := "1.0"
 
 scalaVersion := "2.9.2"
 
-libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
+scalacOptions += "-deprecation"
 
-EclipseKeys.createSrc := EclipseCreateSrc.Default + EclipseCreateSrc.Resource
+unmanagedSourceDirectories in Compile <<= (scalaSource in Compile)(Seq(_))
+
+unmanagedSourceDirectories in Test <<= (scalaSource in Test)(Seq(_))
+
+libraryDependencies += "org.scalatest" %% "scalatest" % "1.8" % "test"
 
