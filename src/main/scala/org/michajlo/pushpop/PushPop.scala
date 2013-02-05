@@ -4,6 +4,11 @@ import java.io.File
 import org.michajlo.pushpop.asm.PlaintextAsmParser
 import org.michajlo.pushpop.vm.VirtualMachine
 
+/**
+ * Simple runner, invoke via:
+ *
+ *   scala ... org.michajlo.pushpop.PushPop run <asm_file>
+ */
 object PushPop {
 
   def main(args: Array[String]) = args match {

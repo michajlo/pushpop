@@ -6,7 +6,63 @@ import org.michajlo.pushpop.vm.Asm
 import java.io.StringReader
 import java.io.Reader
 
+/**
+ * Parser for plaintext pushpop assembly code. Expected format is
+ *
+ *   data {
+ *     (ident = (stringLiteral | wholeNumber))*
+ *   }
+ *
+ *   code {
+ *     insn+
+ *   }
+ *
+ * Where insn is one of the native instructions
+ *
+ *   Push wholeNumber
+ *   Pop
+ *   Add
+ *   Sub
+ *   Mul
+ *   Div
+ *   CallBIF
+ *
+ * or the pseudo instruction
+ *
+ *   LPush ident
+ *
+ * Where LPush ident translates into Push(data[key])
+ *
+ * Note that while the data section may be empty, it may not be omitted.
+ */
 object PlaintextAsmParser extends JavaTokenParsers {
+
+  /**
+   * Load instructions from a string, throw IllegalArgumentException on parse error,
+   * or NoSuchElementException on bad data reference in the code section
+   *
+   * @param assembly String assembly code representation
+   *
+   * @return list of Asm.Insns from input
+   */
+  def parse(assembly: String): List[Asm.Insn] = parse(new StringReader(assembly))
+
+  /**
+   * Load instructions from a Reader, throw IllegalArgumentException on parse error,
+   * or NoSuchElementException on bad data reference in the code section
+   *
+   * @param assembly Reader from which assembly can be read
+   *
+   * @return list of Asm.Insns from input
+   */
+  def parse(assembly: Reader): List[Asm.Insn] = parse(dataSection, assembly) match {
+    case Success(data, rest) => parseAll(codeSection(data), rest) match {
+      case Success(insns, _) => insns
+      case nonSuccess => throw new IllegalArgumentException("Error parsing code section: " + nonSuccess)
+    }
+    case nonSuccess => throw new IllegalArgumentException("Error parsing data section: " + nonSuccess)
+  }
+
 
   // note that for string literal we get the preceding and trailing "
   private def dataValue: Parser[Any] =
@@ -34,16 +90,5 @@ object PlaintextAsmParser extends JavaTokenParsers {
 
   private def codeSection(data: Map[String, Any]): Parser[List[Asm.Insn]] =
     ("code" ~ "{") ~> rep1(insn(data)) <~ "}"
-
-
-  def parse(assembly: String): List[Asm.Insn] = parse(new StringReader(assembly))
-
-  def parse(assembly: Reader): List[Asm.Insn] = parse(dataSection, assembly) match {
-    case Success(data, rest) => parseAll(codeSection(data), rest) match {
-      case Success(insns, _) => insns
-      case nonSuccess => throw new IllegalArgumentException("Error parsing code section: " + nonSuccess)
-    }
-    case nonSuccess => throw new IllegalArgumentException("Error parsing data section: " + nonSuccess)
-  }
 
 }

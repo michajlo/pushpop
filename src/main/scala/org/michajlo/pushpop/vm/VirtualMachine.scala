@@ -2,10 +2,22 @@ package org.michajlo.pushpop.vm
 
 import Asm._
 
+/**
+ * Executes Asm.Insns on an internally maintained stack,
+ * this guy is the heart of the execution
+ */
 class VirtualMachine {
 
   val stack: Stack = new Stack
 
+  /**
+   * Execute a series of instructions.
+   *
+   * The stack is left in the state in which the program
+   * leaves it at the end of execution
+   *
+   * @param program list of instructions to execute
+   */
   def run(program: List[Insn]) {
     program.foreach {
       case Push(value) => stack.push(value)
