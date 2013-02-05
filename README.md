@@ -1,4 +1,4 @@
-# PushPop
+# PushPop [![Build Status](https://travis-ci.org/michajlo/pushpop.png)](https://travis-ci.org/michajlo/pushpop)
 
 A simple stack based language/VM, because I was curious.
 
