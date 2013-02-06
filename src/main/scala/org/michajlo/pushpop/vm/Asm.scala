@@ -46,6 +46,19 @@ object Asm {
   case object Mul extends Insn
 
   /**
+   * Jump to subroutine located at newInsnPtr
+   *
+   * Pushes the next insnPtr onto the stack
+   */
+  case class Jsr(newInsnPtr: Int) extends Insn
+
+  /**
+   * Return from a subroutine, pops the stored insnPtr off the
+   * the stack and goes to it
+   */
+  case object Ret extends Insn
+
+  /**
    * Assign value to offset from the current stack pointer
    */
   case class Assign(offset: Int, value: Any) extends Insn

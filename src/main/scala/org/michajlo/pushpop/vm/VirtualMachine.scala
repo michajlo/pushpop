@@ -11,6 +11,9 @@ import Asm.Mul
 import Asm.Pop
 import Asm.Push
 import Asm.Sub
+import Asm.Jsr
+import Asm.Ret
+
 
 /**
  * Executes Asm.Insns on an internally maintained stack,
@@ -53,6 +56,7 @@ class VirtualMachine {
           case "print" =>
             System.out.println(stack.pop())
             execute(insns, insnPtr + 1)
+          case "exit" =>
         }
 
         case Add => (stack.pop(), stack.pop()) match {
@@ -78,6 +82,15 @@ class VirtualMachine {
             stack.push(l / r)
             execute(insns, insnPtr + 1)
         }
+
+        case Jsr(newInsnPtr) =>
+          stack.push(insnPtr + 1)
+          execute(insns, newInsnPtr)
+
+        case Ret => stack.pop() match {
+          case newInsnPtr: Int => execute(insns, newInsnPtr)
+        }
+
 
         case Assign(offset, value) =>
           stack.assign(offset, value)

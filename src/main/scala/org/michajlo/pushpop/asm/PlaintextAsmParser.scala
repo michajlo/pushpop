@@ -86,7 +86,9 @@ object PlaintextAsmParser extends JavaTokenParsers {
     ("Sub" ^^ { _ => Asm.Sub }) |
     ("Mul" ^^ { _ => Asm.Mul }) |
     ("Div" ^^ { _ => Asm.Div }) |
-    ("CallBIF" ^^ { _ => Asm.CallBIF} )
+    ("CallBIF" ^^ { _ => Asm.CallBIF} ) |
+    ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt)}) |
+    ("Ret" ^^ { _ => Asm.Ret })
 
   private def codeSection(data: Map[String, Any]): Parser[List[Asm.Insn]] =
     ("code" ~ "{") ~> rep1(insn(data)) <~ "}"
