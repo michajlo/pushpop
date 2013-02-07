@@ -29,8 +29,8 @@ object PlaintextAsmParser extends JavaTokenParsers {
    *
    * @return list of Asm.Insns from input
    */
-  def parse(assembly: Reader): List[Asm.Insn] = parseAll(codeSection, assembly) match {
-    case Success(insns, _) => insns
+  def parse(assembly: Reader): List[Asm.Insn] = parseAll(code, assembly) match {
+    case Success(insns, _) => reify(insns, getLabelOffsets(insns))
     case nonSuccess => throw new IllegalArgumentException("Error parsing assembly: " + nonSuccess)
   }
 
@@ -65,23 +65,23 @@ object PlaintextAsmParser extends JavaTokenParsers {
     ("Jsr" ~> ident) ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }
 
   // all of the codes, all together
-  private def codeSection: Parser[List[Asm.Insn]] =
-    rep1(fullInsn | label | partialInsn) ^^ {
-      intermediaries => {
-        // determine offsets of all labels
-        val (_, labelOffsets) = intermediaries.foldLeft((0, Map[String, Int]())) {
-          case ((off, tokensOffsets), Label(label)) =>
-            (off, tokensOffsets + (label -> off))
-          case ((off, tokensOffsets), _: PartialInsn | _: FullInsn) =>
-            (off + 1, tokensOffsets)
-        }
+  private def code: Parser[List[Intermediary]] = rep1(fullInsn | label | partialInsn)
 
-        // collect and complete if necessary all instructions
-        intermediaries.collect {
-          case FullInsn(insn) => insn
-          case PartialInsn("Jsr", Some(lbl: String)) => Asm.Jsr(labelOffsets(lbl))
-        }
-      }
+  // post-processing
+  private def getLabelOffsets(intermediaries: List[Intermediary]) = {
+    val (_, labelOffsets) = intermediaries.foldLeft((0, Map[String, Int]())) {
+      case ((off, offsets), Label(label)) =>
+        (off, offsets + (label -> off))
+      case ((off, tokensOffsets), _: PartialInsn | _: FullInsn) =>
+        (off + 1, tokensOffsets)
     }
+    labelOffsets
+  }
+
+  def reify(intermediaries: List[Intermediary], labelOffsets: Map[String, Int]) = intermediaries.collect {
+    case FullInsn(insn) => insn
+    case PartialInsn("Jsr", Some(lbl: String)) =>
+      Asm.Jsr(labelOffsets(lbl))
+  }
 
 }
