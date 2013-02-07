@@ -1,29 +1,18 @@
-data {
-  helloWorld = "hello world"
-  in_sub = "i'm in a subroutine!"
+Push "hello world"
+Push "print"
+CallBIF
 
-  bif_print = "print"
-  bif_exit = "exit"
+Push 1
+Push "print"
+CallBIF
 
-}
-
-code {
-  LPush helloWorld
-  LPush bif_print
-  CallBIF
-
-  Push 1
-  LPush bif_print
-  CallBIF
-
-  Jsr subroutine
-  Push 0
-  LPush bif_exit
-  CallBIF
+Jsr subroutine
+Push 0
+Push "exit"
+CallBIF
 
 subroutine:
-  LPush in_sub
-  LPush bif_print
-  CallBIF
-  Ret
-}
+Push "I'm in a subroutine!"
+Push "print"
+CallBIF
+Ret

@@ -55,40 +55,25 @@ object PlaintextAsmParser extends JavaTokenParsers {
    *
    * @return list of Asm.Insns from input
    */
-  def parse(assembly: Reader): List[Asm.Insn] = parse(dataSection, assembly) match {
-    case Success(data, rest) => parseAll(codeSection(data), rest) match {
-      case Success(insns, _) => insns
-      case nonSuccess => throw new IllegalArgumentException("Error parsing code section: " + nonSuccess)
-    }
-    case nonSuccess => throw new IllegalArgumentException("Error parsing data section: " + nonSuccess)
+  def parse(assembly: Reader): List[Asm.Insn] = parseAll(codeSection, assembly) match {
+    case Success(insns, _) => insns
+    case nonSuccess => throw new IllegalArgumentException("Error parsing assembly: " + nonSuccess)
   }
 
-
-  // note that for string literal we get the preceding and trailing "
-  private def dataValue: Parser[Any] =
-    (stringLiteral ^^ {s => s.subSequence(1, s.length() - 1)}) |
-    (wholeNumber ^^ {s => s.toInt})
-
-  private def dataAssignment: Parser[(String, Any)] = ident ~ "=" ~ dataValue ^^ {
-    case (key ~ "=" ~ value) => (key, value)
-  }
-
-  private def dataSection: Parser[Map[String, Any]] =
-    ("data" ~ "{") ~> rep(dataAssignment) <~ "}" ^^ {
-      kvs => Map[String, Any](kvs: _*)
-    }
-
-
+  // Parent trait for compilation
   trait Intermediary
   case class Label(name: String) extends Intermediary
   case class FullInsn(insn: Asm.Insn) extends Intermediary
   case class PartialInsn(name: String, arg: Option[Any]) extends Intermediary
 
+  // a label identifies a region of code
   private def label: Parser[Label] = ident <~ ":" ^^ { Label(_) }
 
-  private def properInsn(data: Map[String, Any]): Parser[Asm.Insn] =
+  // a properInsn is something that can be translated directly to assembly
+  //  with no additional passes
+  private def properInsn: Parser[Asm.Insn] =
     ("Push" ~> wholeNumber ^^ { n => Asm.Push(n.toInt) }) |
-    ("LPush" ~> ident ^^ { id => Asm.Push(data(id))}) |
+    ("Push" ~> stringLiteral ^^ { s => Asm.Push(s.subSequence(1, s.length() - 1))}) |
     ("Pop" ^^ { _ => Asm.Pop }) |
     ("Add" ^^ { _ => Asm.Add }) |
     ("Sub" ^^ { _ => Asm.Sub }) |
@@ -98,26 +83,30 @@ object PlaintextAsmParser extends JavaTokenParsers {
     ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt) }) |
     ("Ret" ^^ { _ => Asm.Ret })
 
+  // a fullInsn is simply a wrapper to Asm.Insn so it falls under the Intermediary type
+  private def fullInsn: Parser[FullInsn] = properInsn ^^ { FullInsn(_) }
+
+  // an instruction that needs a second pass (label substitution) to become a proper instruction
   private def partialInsn: Parser[PartialInsn] =
     ("Jsr" ~> ident) ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }
 
-  private def fullInsn(data: Map[String, Any]): Parser[FullInsn] = properInsn(data) ^^ { FullInsn(_) }
-
-  private def codeSection(data: Map[String, Any]): Parser[List[Asm.Insn]] =
-    ("code" ~ "{") ~> rep1(fullInsn(data) | label | partialInsn) <~ "}" ^^ {
+  // all of the codes, all together
+  private def codeSection: Parser[List[Asm.Insn]] =
+    rep1(fullInsn | label | partialInsn) ^^ {
       intermediaries => {
+        // determine offsets of all labels
         val (_, labelOffsets) = intermediaries.foldLeft((0, Map[String, Int]())) {
           case ((off, tokensOffsets), Label(label)) =>
             (off, tokensOffsets + (label -> off))
           case ((off, tokensOffsets), _: PartialInsn | _: FullInsn) =>
             (off + 1, tokensOffsets)
         }
-        val code = intermediaries.collect {
+
+        // collect and complete if necessary all instructions
+        intermediaries.collect {
           case FullInsn(insn) => insn
           case PartialInsn("Jsr", Some(lbl: String)) => Asm.Jsr(labelOffsets(lbl))
         }
-        println(code)
-        code
       }
     }
 
