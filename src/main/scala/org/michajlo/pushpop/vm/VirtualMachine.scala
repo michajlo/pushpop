@@ -2,18 +2,7 @@ package org.michajlo.pushpop.vm
 
 import scala.annotation.tailrec
 
-import Asm.Add
-import Asm.CallBIF
-import Asm.Div
-import Asm.Insn
-import Asm.Jsr
-import Asm.Mul
-import Asm.Pop
-import Asm.Push
-import Asm.Ret
-import Asm.Sub
-import Asm.Nop
-
+import Asm._
 
 /**
  * Executes Asm.Insns on an internally maintained stack,
@@ -93,6 +82,19 @@ class VirtualMachine {
         case Ret => insnPtrStack.pop() match {
           case newInsnPtr: Int => execute(insns, newInsnPtr)
         }
+
+        case Jmp(newInsnPtr) => execute(insns, newInsnPtr)
+
+        case JmpZ(newInsnPtr) =>
+          execute(insns, if (dataStack.peek == 0) newInsnPtr else insnPtr + 1)
+
+        case LPush(stackOff) =>
+          dataStack.push(dataStack.get(stackOff))
+          execute(insns, insnPtr + 1)
+
+        case Assign(stackOff) =>
+          dataStack.assign(stackOff, dataStack.pop())
+          execute(insns, insnPtr + 1)
       }
     }
   }

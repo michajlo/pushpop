@@ -63,4 +63,28 @@ object Asm {
    */
   case object Ret extends Insn
 
+  /**
+   * Unconditionally jump to newInsnPtr
+   */
+  case class Jmp(newInsnPtr: Int) extends Insn
+
+  /**
+   * Jump to newInsnPtr if the value on the top of the stack is zero
+   *
+   * Does not pop the value on the top of the stack, but this may change
+   * pending patterns that emerge
+   */
+  case class JmpZ(newInsnPtr: Int) extends Insn
+
+  /**
+   * Load a value from an offset into the stack and push it on
+   * top
+   */
+  case class LPush(stackOff: Int) extends Insn
+
+  /**
+   * Pop a value from the stack and assign it to stackOffset into the stack
+   * after the pop
+   */
+  case class Assign(stackOff: Int) extends Insn
 }

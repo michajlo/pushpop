@@ -48,6 +48,8 @@ object PlaintextAsmParser extends JavaTokenParsers {
   private def properInsn: Parser[Asm.Insn] =
     ("Push" ~> wholeNumber ^^ { n => Asm.Push(n.toInt) }) |
     ("Push" ~> stringLiteral ^^ { s => Asm.Push(s.subSequence(1, s.length() - 1))}) |
+    ("LPush" ~> wholeNumber ^^ { n => Asm.LPush(n.toInt) }) |
+    ("Assign" ~> wholeNumber ^^ { n => Asm.Assign(n.toInt) }) |
     ("Pop" ^^ { _ => Asm.Pop }) |
     ("Add" ^^ { _ => Asm.Add }) |
     ("Sub" ^^ { _ => Asm.Sub }) |
@@ -55,17 +57,22 @@ object PlaintextAsmParser extends JavaTokenParsers {
     ("Div" ^^ { _ => Asm.Div }) |
     ("CallBIF" ^^ { _ => Asm.CallBIF } ) |
     ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt) }) |
-    ("Ret" ^^ { _ => Asm.Ret })
+    ("Ret" ^^ { _ => Asm.Ret }) |
+    ("JmpZ" ~> wholeNumber ^^ { n => Asm.JmpZ(n.toInt) }) |
+    ("Jmp" ~> wholeNumber ^^ { n => Asm.Jmp(n.toInt) })
 
   // a fullInsn is simply a wrapper to Asm.Insn so it falls under the Intermediary type
   private def fullInsn: Parser[FullInsn] = properInsn ^^ { FullInsn(_) }
 
   // an instruction that needs a second pass (label substitution) to become a proper instruction
   private def partialInsn: Parser[PartialInsn] =
-    ("Jsr" ~> ident) ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }
+    ("Jsr" ~> ident ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }) |
+    ("JmpZ" ~> ident ^^ { lbl => PartialInsn("JmpZ", Some(lbl) )}) |
+    ("Jmp" ~> ident ^^ { lbl => PartialInsn("Jmp", Some(lbl)) })
+
 
   // all of the codes, all together
-  private def code: Parser[List[Intermediary]] = rep1(fullInsn | label | partialInsn)
+  private def code: Parser[List[Intermediary]] = rep1(fullInsn | partialInsn | label)
 
   // post-processing
   private def getLabelOffsets(intermediaries: List[Intermediary]) = {
@@ -80,8 +87,9 @@ object PlaintextAsmParser extends JavaTokenParsers {
 
   def reify(intermediaries: List[Intermediary], labelOffsets: Map[String, Int]) = intermediaries.collect {
     case FullInsn(insn) => insn
-    case PartialInsn("Jsr", Some(lbl: String)) =>
-      Asm.Jsr(labelOffsets(lbl))
+    case PartialInsn("Jsr", Some(lbl: String)) => Asm.Jsr(labelOffsets(lbl))
+    case PartialInsn("Jmp", Some(lbl: String)) => Asm.Jmp(labelOffsets(lbl))
+    case PartialInsn("JmpZ", Some(lbl: String)) => Asm.JmpZ(labelOffsets(lbl))
   }
 
 }

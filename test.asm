@@ -6,6 +6,11 @@ start:
   Push "print"
   CallBIF
 
+  Push 3
+  Jsr sum
+  Push "print"
+  CallBIF
+
   Jsr exit_0
 
 hello_world:
@@ -23,3 +28,18 @@ exit_0:
   Push 0
   Push "exit"
   CallBIF
+
+sum:
+  Push 0
+sum_loop:
+  LPush 1
+  JmpZ sum_ret
+  Add
+  LPush 1
+  Push -1
+  Add
+  Assign 1
+  Jmp sum_loop
+sum_ret:
+  Pop
+  Ret
