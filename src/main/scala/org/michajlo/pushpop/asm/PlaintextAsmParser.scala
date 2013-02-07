@@ -78,7 +78,15 @@ object PlaintextAsmParser extends JavaTokenParsers {
       kvs => Map[String, Any](kvs: _*)
     }
 
-  private def insn(data: Map[String, Any]): Parser[Asm.Insn] =
+
+  trait Intermediary
+  case class Label(name: String) extends Intermediary
+  case class FullInsn(insn: Asm.Insn) extends Intermediary
+  case class PartialInsn(name: String, arg: Option[Any]) extends Intermediary
+
+  private def label: Parser[Label] = ident <~ ":" ^^ { Label(_) }
+
+  private def properInsn(data: Map[String, Any]): Parser[Asm.Insn] =
     ("Push" ~> wholeNumber ^^ { n => Asm.Push(n.toInt) }) |
     ("LPush" ~> ident ^^ { id => Asm.Push(data(id))}) |
     ("Pop" ^^ { _ => Asm.Pop }) |
@@ -86,11 +94,31 @@ object PlaintextAsmParser extends JavaTokenParsers {
     ("Sub" ^^ { _ => Asm.Sub }) |
     ("Mul" ^^ { _ => Asm.Mul }) |
     ("Div" ^^ { _ => Asm.Div }) |
-    ("CallBIF" ^^ { _ => Asm.CallBIF} ) |
-    ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt)}) |
+    ("CallBIF" ^^ { _ => Asm.CallBIF } ) |
+    ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt) }) |
     ("Ret" ^^ { _ => Asm.Ret })
 
+  private def partialInsn: Parser[PartialInsn] =
+    ("Jsr" ~> ident) ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }
+
+  private def fullInsn(data: Map[String, Any]): Parser[FullInsn] = properInsn(data) ^^ { FullInsn(_) }
+
   private def codeSection(data: Map[String, Any]): Parser[List[Asm.Insn]] =
-    ("code" ~ "{") ~> rep1(insn(data)) <~ "}"
+    ("code" ~ "{") ~> rep1(fullInsn(data) | label | partialInsn) <~ "}" ^^ {
+      intermediaries => {
+        val (_, labelOffsets) = intermediaries.foldLeft((0, Map[String, Int]())) {
+          case ((off, tokensOffsets), Label(label)) =>
+            (off, tokensOffsets + (label -> off))
+          case ((off, tokensOffsets), _: PartialInsn | _: FullInsn) =>
+            (off + 1, tokensOffsets)
+        }
+        val code = intermediaries.collect {
+          case FullInsn(insn) => insn
+          case PartialInsn("Jsr", Some(lbl: String)) => Asm.Jsr(labelOffsets(lbl))
+        }
+        println(code)
+        code
+      }
+    }
 
 }

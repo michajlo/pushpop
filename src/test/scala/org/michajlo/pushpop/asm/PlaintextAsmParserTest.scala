@@ -63,4 +63,29 @@ class PlaintextAsmParserTest extends FunSpec {
 
     assert(expected === insns)
   }
+
+  it ("must properly fill in labels") {
+    val assembly = """
+      data {}
+      code {
+        label1:
+        label2:
+          Push 1
+          Jsr label1
+        label3:
+          Jsr label2
+          Jsr label3
+      }
+      """
+
+    val expected = List(
+        Asm.Push(1),
+        Asm.Jsr(0),
+        Asm.Jsr(0),
+        Asm.Jsr(2))
+
+    val insns = PlaintextAsmParser.parse(assembly)
+
+    assert(expected === insns)
+  }
 }

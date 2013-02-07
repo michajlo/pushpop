@@ -16,11 +16,12 @@ code {
   LPush bif_print
   CallBIF
 
-  Jsr 10
+  Jsr subroutine
   Push 0
   LPush bif_exit
   CallBIF
 
+subroutine:
   LPush in_sub
   LPush bif_print
   CallBIF
