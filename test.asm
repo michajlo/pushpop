@@ -1,18 +1,25 @@
-Push "hello world"
-Push "print"
-CallBIF
+start:
+  Jsr hello_world
 
-Push 1
-Push "print"
-CallBIF
+  Push 2
+  Jsr increment_by_two
+  Push "print"
+  CallBIF
 
-Jsr subroutine
-Push 0
-Push "exit"
-CallBIF
+  Jsr exit_0
 
-subroutine:
-Push "I'm in a subroutine!"
-Push "print"
-CallBIF
-Ret
+hello_world:
+  Push "I'm in a subroutine!"
+  Push "print"
+  CallBIF
+  Ret
+
+increment_by_two:
+  Push 2
+  Add
+  Ret
+
+exit_0:
+  Push 0
+  Push "exit"
+  CallBIF
