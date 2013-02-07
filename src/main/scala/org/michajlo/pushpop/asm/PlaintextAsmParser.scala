@@ -7,33 +7,7 @@ import java.io.StringReader
 import java.io.Reader
 
 /**
- * Parser for plaintext pushpop assembly code. Expected format is
- *
- *   data {
- *     (ident = (stringLiteral | wholeNumber))*
- *   }
- *
- *   code {
- *     insn+
- *   }
- *
- * Where insn is one of the native instructions
- *
- *   Push wholeNumber
- *   Pop
- *   Add
- *   Sub
- *   Mul
- *   Div
- *   CallBIF
- *
- * or the pseudo instruction
- *
- *   LPush ident
- *
- * Where LPush ident translates into Push(data[key])
- *
- * Note that while the data section may be empty, it may not be omitted.
+ * Parser for plaintext pushpop assembly code.
  */
 object PlaintextAsmParser extends JavaTokenParsers {
 
