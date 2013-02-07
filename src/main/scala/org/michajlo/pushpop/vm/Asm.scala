@@ -58,8 +58,4 @@ object Asm {
    */
   case object Ret extends Insn
 
-  /**
-   * Assign value to offset from the current stack pointer
-   */
-  case class Assign(offset: Int, value: Any) extends Insn
 }

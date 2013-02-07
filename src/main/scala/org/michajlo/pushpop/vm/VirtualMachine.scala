@@ -3,16 +3,15 @@ package org.michajlo.pushpop.vm
 import scala.annotation.tailrec
 
 import Asm.Add
-import Asm.Assign
 import Asm.CallBIF
 import Asm.Div
 import Asm.Insn
+import Asm.Jsr
 import Asm.Mul
 import Asm.Pop
 import Asm.Push
-import Asm.Sub
-import Asm.Jsr
 import Asm.Ret
+import Asm.Sub
 
 
 /**
@@ -90,11 +89,6 @@ class VirtualMachine {
         case Ret => stack.pop() match {
           case newInsnPtr: Int => execute(insns, newInsnPtr)
         }
-
-
-        case Assign(offset, value) =>
-          stack.assign(offset, value)
-          execute(insns, insnPtr + 1)
       }
     }
   }

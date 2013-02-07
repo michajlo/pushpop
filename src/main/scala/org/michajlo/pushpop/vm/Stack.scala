@@ -34,18 +34,6 @@ class Stack {
   }
 
   /**
-   * Assign value to the slot offset from the top of the stack
-   *
-   * If the offset is invalid fail hard
-   *
-   * @param offset offset into stack to assign to
-   * @param value value to assign
-   */
-  def assign(offset: Int, value: Any) {
-    stack(ptr - offset) = value
-  }
-
-  /**
    * Is the stack empty?
    */
   def empty = ptr == -1
