@@ -17,7 +17,7 @@ object PushPop {
       val insns = PlaintextAsmParser.parse(fileReader)
       val vm = new VirtualMachine
       vm.run(insns)
-      if (vm.stack.empty) 0 else vm.stack.pop() match {
+      if (vm.dataStack.empty) 0 else vm.dataStack.pop() match {
         case n: Int => n
         case _ => 0
       }

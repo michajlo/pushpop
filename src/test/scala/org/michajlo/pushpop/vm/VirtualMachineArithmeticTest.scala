@@ -1,15 +1,15 @@
 package org.michajlo.pushpop.vm
 import org.scalatest.FunSpec
 
-class VirtualMachineTest extends FunSpec {
+class VirtualMachineArithmeticTest extends FunSpec {
 
   it ("must add properly") {
     val vm = new VirtualMachine
 
     vm.run(List(Asm.Push(1), Asm.Push(2), Asm.Add))
 
-    assert(3 === vm.stack.pop())
-    assert(vm.stack.empty)
+    assert(3 === vm.dataStack.pop())
+    assert(vm.dataStack.empty)
   }
 
   it ("must subtract properly") {
@@ -17,8 +17,8 @@ class VirtualMachineTest extends FunSpec {
 
     vm.run(List(Asm.Push(2), Asm.Push(1), Asm.Sub))
 
-    assert(1 === vm.stack.pop())
-    assert(vm.stack.empty)
+    assert(1 === vm.dataStack.pop())
+    assert(vm.dataStack.empty)
   }
 
   it ("must multiply properly") {
@@ -26,8 +26,8 @@ class VirtualMachineTest extends FunSpec {
 
     vm.run(List(Asm.Push(7), Asm.Push(8), Asm.Mul))
 
-    assert(56 === vm.stack.pop())
-    assert(vm.stack.empty)
+    assert(56 === vm.dataStack.pop())
+    assert(vm.dataStack.empty)
   }
 
   it ("must divide properly") {
@@ -35,7 +35,7 @@ class VirtualMachineTest extends FunSpec {
 
     vm.run(List(Asm.Push(10), Asm.Push(5), Asm.Div))
 
-    assert(2 === vm.stack.pop())
-    assert(vm.stack.empty)
+    assert(2 === vm.dataStack.pop())
+    assert(vm.dataStack.empty)
   }
 }

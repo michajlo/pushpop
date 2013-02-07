@@ -12,6 +12,7 @@ import Asm.Pop
 import Asm.Push
 import Asm.Ret
 import Asm.Sub
+import Asm.Nop
 
 
 /**
@@ -20,7 +21,8 @@ import Asm.Sub
  */
 class VirtualMachine {
 
-  val stack: Stack = new Stack
+  val dataStack: Stack = new Stack
+  val insnPtrStack: Stack = new Stack
 
   /**
    * Execute a series of instructions.
@@ -30,12 +32,12 @@ class VirtualMachine {
    *
    * @param program list of instructions to execute
    */
-  def run(program: List[Insn]) {
-    execute(program.toArray)
+  def run(program: List[Insn], insnPtr: Int = 0) {
+    execute(program.toArray, insnPtr)
   }
 
   /**
-   * Execute insns startin at insnPtr
+   * Execute insns starting at insnPtr
    *
    * @param insns instructions to execute
    * @param insnPtr instruction pointer to run from (default 0)
@@ -45,48 +47,50 @@ class VirtualMachine {
     if (insnPtr < insns.length) {
       insns(insnPtr) match {
         case Push(value) =>
-          stack.push(value)
+          dataStack.push(value)
           execute(insns, insnPtr + 1)
         case Pop =>
-          stack.pop()
+          dataStack.pop()
           execute(insns, insnPtr + 1)
 
-        case CallBIF => stack.pop() match {
+        case Nop => execute(insns, insnPtr + 1)
+
+        case CallBIF => dataStack.pop() match {
           case "print" =>
-            System.out.println(stack.pop())
+            System.out.println(dataStack.pop())
             execute(insns, insnPtr + 1)
           case "exit" =>
         }
 
-        case Add => (stack.pop(), stack.pop()) match {
+        case Add => (dataStack.pop(), dataStack.pop()) match {
           case (a1: Int, a2: Int) =>
-            stack.push(a1 + a2)
+            dataStack.push(a1 + a2)
             execute(insns, insnPtr + 1)
         }
 
-        case Sub => (stack.pop(), stack.pop()) match {
+        case Sub => (dataStack.pop(), dataStack.pop()) match {
           case (r: Int, l: Int) =>
-            stack.push(l - r)
+            dataStack.push(l - r)
             execute(insns, insnPtr + 1)
         }
 
-        case Mul => (stack.pop(), stack.pop()) match {
+        case Mul => (dataStack.pop(), dataStack.pop()) match {
           case (m1: Int, m2: Int) =>
-            stack.push(m1 * m2)
+            dataStack.push(m1 * m2)
             execute(insns, insnPtr + 1)
         }
 
-        case Div => (stack.pop(), stack.pop()) match {
+        case Div => (dataStack.pop(), dataStack.pop()) match {
           case (r: Int, l: Int) =>
-            stack.push(l / r)
+            dataStack.push(l / r)
             execute(insns, insnPtr + 1)
         }
 
         case Jsr(newInsnPtr) =>
-          stack.push(insnPtr + 1)
+          insnPtrStack.push(insnPtr + 1)
           execute(insns, newInsnPtr)
 
-        case Ret => stack.pop() match {
+        case Ret => insnPtrStack.pop() match {
           case newInsnPtr: Int => execute(insns, newInsnPtr)
         }
       }

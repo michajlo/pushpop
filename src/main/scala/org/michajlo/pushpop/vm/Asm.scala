@@ -11,6 +11,11 @@ object Asm {
   trait Insn
 
   /**
+   * Does nothing
+   */
+  case object Nop extends Insn
+
+  /**
    * Push a value onto the stack
    */
   case class Push(value: Any) extends Insn
@@ -48,13 +53,13 @@ object Asm {
   /**
    * Jump to subroutine located at newInsnPtr
    *
-   * Pushes the next insnPtr onto the stack
+   * Pushes the next insnPtr onto the instruction pointer stack
    */
   case class Jsr(newInsnPtr: Int) extends Insn
 
   /**
    * Return from a subroutine, pops the stored insnPtr off the
-   * the stack and goes to it
+   * instruction pointer stack and goes to it
    */
   case object Ret extends Insn
 
