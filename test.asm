@@ -6,12 +6,15 @@ start:
   Push "print"
   CallBIF
 
+  Push 1234
   Push 3
   Jsr sum
   Push "print"
   CallBIF
-
-  Jsr exit_0
+  Push -1234
+  Add
+  JmpZ exit_0
+  Jmp exit_1
 
 hello_world:
   Push "I'm in a subroutine!"
@@ -29,6 +32,11 @@ exit_0:
   Push "exit"
   CallBIF
 
+exit_1:
+  Push 1
+  Push "exit"
+  CallBIF
+
 sum:
   Push 0
 sum_loop:
@@ -42,4 +50,5 @@ sum_loop:
   Jmp sum_loop
 sum_ret:
   Pop
+  Assign 0
   Ret
