@@ -6,10 +6,17 @@ import org.michajlo.pushpop.vm.Asm
 import java.io.StringReader
 import java.io.Reader
 
+object PlaintextAsmParser extends JavaTokenParsers {
+  def parse(assembly: String): List[Asm.Insn] = parse(new StringReader(assembly))
+
+  def parse(assembly: Reader): List[Asm.Insn] =
+    (new PlaintextAsmParser).parse(assembly)
+}
+
 /**
  * Parser for plaintext pushpop assembly code.
  */
-object PlaintextAsmParser extends JavaTokenParsers {
+class PlaintextAsmParser extends JavaTokenParsers {
 
   /**
    * Load instructions from a string, throw IllegalArgumentException on parse error,
@@ -39,6 +46,8 @@ object PlaintextAsmParser extends JavaTokenParsers {
   case class Label(name: String) extends Intermediary
   case class FullInsn(insn: Asm.Insn) extends Intermediary
   case class PartialInsn(name: String, arg: Option[Any]) extends Intermediary
+
+  override val whiteSpace = """(\s*(;[^\n]*\n)?)+""".r
 
   // a label identifies a region of code
   private def label: Parser[Label] = ident <~ ":" ^^ { Label(_) }

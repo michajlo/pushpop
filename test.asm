@@ -6,12 +6,12 @@ start:
   Push "print"
   CallBIF
 
-  Push 1234
+  Push 1234     ; place canary
   Push 3
   Jsr sum
   Push "print"
   CallBIF
-  Push -1234
+  Push -1234    ; check that stack not changed
   Add
   JmpZ exit_0
   Jmp exit_1
@@ -38,17 +38,17 @@ exit_1:
   CallBIF
 
 sum:
-  Push 0
+  Push 0        ; sum = 0
 sum_loop:
-  LPush 1
-  JmpZ sum_ret
-  Add
+  LPush 1       ; load i
+  JmpZ sum_ret  ; if i == 0 goto end
+  Add           ; sum = sum + i
   LPush 1
   Push -1
   Add
-  Assign 1
+  Assign 1      ; i = i - 1
   Jmp sum_loop
 sum_ret:
-  Pop
-  Assign 0
+  Pop           ; pop i (on top of stack from 0 check)
+  Assign 0      ; place sum for return
   Ret
