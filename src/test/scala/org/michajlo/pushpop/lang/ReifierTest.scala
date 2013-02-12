@@ -55,4 +55,28 @@ class ReifierTest extends FunSpec {
     assert(expected === insns)
     assert(vars === newVars)
   }
+
+  it ("must properly reify mul nodes") {
+    val vars = List("y", "x")
+    val mul = Ast.Mul(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List(Asm.LPush(1), Asm.LPush(1), Asm.Mul)
+
+    val (insns, newVars) = Reifier.reify(mul, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
+
+  it ("must properly reify div nodes") {
+    val vars = List("y", "x")
+    val div = Ast.Div(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List(Asm.LPush(1), Asm.LPush(1), Asm.Div)
+
+    val (insns, newVars) = Reifier.reify(div, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
 }

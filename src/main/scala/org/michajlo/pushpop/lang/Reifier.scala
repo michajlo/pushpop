@@ -36,6 +36,14 @@ object Reifier {
     case Ast.Sub(lhs, rhs) =>
       val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List(Asm.Sub)
       (insns, vars)
+
+    case Ast.Mul(lhs, rhs) =>
+      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List(Asm.Mul)
+      (insns, vars)
+
+    case Ast.Div(lhs, rhs) =>
+      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List(Asm.Div)
+      (insns, vars)
   }
 
 }
