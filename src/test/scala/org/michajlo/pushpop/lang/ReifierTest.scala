@@ -117,7 +117,7 @@ class ReifierTest extends FunSpec {
     assert(vars == newVars)
   }
 
-    it ("must properly reify a function") {
+  it ("must properly reify a function") {
     val vars = List("x", "y")
     val fun = Ast.Function("foo", List("arg1", "arg2"),
         Ast.Block(
@@ -148,5 +148,30 @@ class ReifierTest extends FunSpec {
 
     assert(expected === insns)
     assert(vars == newVars)
+  }
+
+  it ("must properly reify a program") {
+    val function1 = Ast.Function("foo", List("arg"), Ast.Block(Nil, Ast.Const(1)))
+    val function2 = Ast.Function("main", List(), Ast.Block(Nil, Ast.Const(2)))
+
+    val prog = Ast.Program(List(function1, function2))
+
+    val expected = List(
+        "Jsr main",
+        "Push \"exit\"",
+        "CallBIF",
+        "foo:",
+        "Push 1",
+        "Assign 0",
+        "Ret",
+        "main:",
+        "Push 2",
+        "Ret"
+    )
+
+    val (insns, newVars) = Reifier.reify(prog, Nil)
+
+    assert(expected === insns)
+    assert(Nil === newVars)
   }
 }

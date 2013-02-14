@@ -70,6 +70,11 @@ object Reifier {
       val bodyInsns = reify(body, args ++ vars)._1
       val resultPushInsns = args.map(_ => "Assign 0")
       (label :: (bodyInsns ++ resultPushInsns ++ List("Ret")), vars)
+
+    case Ast.Program(functions) =>
+      val functionInsns = functions.map(f => reify(f, Nil)._1)
+      ("Jsr main" :: "Push \"exit\"" ::  "CallBIF" :: functionInsns.flatten, Nil)
+
   }
 
   private def pushAsArgs(exprs: List[Ast.Expr], vars: List[String], asms: List[List[String]] = Nil): List[String] = exprs match {
