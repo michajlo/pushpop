@@ -99,4 +99,54 @@ class ReifierTest extends FunSpec {
     assert(expected === insns)
     assert(vars == newVars)
   }
+
+  it ("must properly reify a function call") {
+    val vars = List("x", "y")
+    val funcall = Ast.FunctionCall("foo", List(Ast.Const(1), Ast.Ident("x"), Ast.Ident("y")))
+
+    val expected = List(
+        "LPush 1",  // y
+        "LPush 1",  // x
+        "Push 1",   // 1
+        "Jsr foo"
+    )
+
+    val (insns, newVars) = Reifier.reify(funcall, vars)
+
+    assert(expected === insns)
+    assert(vars == newVars)
+  }
+
+    it ("must properly reify a function") {
+    val vars = List("x", "y")
+    val fun = Ast.Function("foo", List("arg1", "arg2"),
+        Ast.Block(
+            List(
+                Ast.Declare("z", Ast.Ident("arg2")),
+                Ast.Declare("a", Ast.Ident("arg1")),
+                Ast.Declare("b", Ast.Ident("arg2"))
+            ),
+            Ast.Ident("z")
+        )
+    )
+
+    val expected = List(
+        "foo:",
+        "LPush 1",  // z = arg2
+        "LPush 1",  // a = arg1
+        "LPush 3",  // b = arg2
+        "LPush 2",  // z
+        "Assign 0", // replace b stack slot
+        "Assign 0", // replace a "        "
+        "Assign 0", // replace z "        "
+        "Assign 0", // replace arg2 stack slot
+        "Assign 0", // replace arg1 stack slot
+        "Ret"
+    )
+
+    val (insns, newVars) = Reifier.reify(fun, vars)
+
+    assert(expected === insns)
+    assert(vars == newVars)
+  }
 }

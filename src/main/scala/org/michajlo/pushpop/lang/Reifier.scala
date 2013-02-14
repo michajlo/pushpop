@@ -23,19 +23,19 @@ object Reifier {
       (List("Push \"" + value + "\""), vars)
 
     case Ast.Add(lhs, rhs) =>
-      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List("Add")
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Add")
       (insns, vars)
 
     case Ast.Sub(lhs, rhs) =>
-      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List("Sub")
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Sub")
       (insns, vars)
 
     case Ast.Mul(lhs, rhs) =>
-      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List("Mul")
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Mul")
       (insns, vars)
 
     case Ast.Div(lhs, rhs) =>
-      val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List("Div")
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Div")
       (insns, vars)
 
     case Ast.Block(stmts, result) =>
@@ -59,7 +59,24 @@ object Reifier {
       // put em together proper (we've built the insns up reversed so far...
       val finalInsns = (resultPushInsns :: resultInsns :: insns).reverse.flatten
       (finalInsns, initVars)
+
+    case Ast.FunctionCall(name, argExprs) =>
+      // function calls will expect args in reverse order
+      val insns = pushAsArgs(argExprs.reverse, vars) ++ List("Jsr " + name)
+      (insns, vars)
+
+    case Ast.Function(name, args, body) =>
+      val label = name + ":"
+      val bodyInsns = reify(body, args ++ vars)._1
+      val resultPushInsns = args.map(_ => "Assign 0")
+      (label :: (bodyInsns ++ resultPushInsns ++ List("Ret")), vars)
   }
 
+  private def pushAsArgs(exprs: List[Ast.Expr], vars: List[String], asms: List[List[String]] = Nil): List[String] = exprs match {
+    case Nil => asms.reverse.flatten
+    case arg :: rest =>
+      // need to push pseudo-var "#nil" (not allowed per syntax) as a placeholder of stack location
+      pushAsArgs(rest, "#nil" :: vars, reify(arg, vars)._1 :: asms)
+  }
 
 }
