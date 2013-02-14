@@ -4,12 +4,12 @@ import org.michajlo.pushpop.vm.Asm
 
 class ReifierTest extends FunSpec {
 
-  it ("must properly reify a declare with a value") {
+  it ("must properly reify a declare with an int value") {
     val declare = Ast.Declare("varname", Ast.Const(1))
 
     val (insns, vars) = Reifier.reify(declare, Nil)
 
-    assert(List(Asm.Push(1)) === insns)
+    assert(List("Push 1") === insns)
     assert(List("varname") === vars)
   }
 
@@ -19,7 +19,7 @@ class ReifierTest extends FunSpec {
     val vars = List("notvar", "varname")
     val (insns, newVars) = Reifier.reify(ident, vars)
 
-    assert(List(Asm.LPush(1)) === insns)
+    assert(List("LPush 1") === insns)
     assert(vars === newVars)
   }
 
@@ -27,7 +27,7 @@ class ReifierTest extends FunSpec {
     val vars = List("y", "x")
     val add = Ast.Add(Ast.Ident("x"), Ast.Const(1))
 
-    val expected = List(Asm.LPush(1), Asm.Push(1), Asm.Add)
+    val expected = List("LPush 1", "Push 1", "Add")
 
     val (insns, newVars) = Reifier.reify(add, vars)
 
@@ -39,7 +39,7 @@ class ReifierTest extends FunSpec {
     val vars = List("y", "x")
     val sub = Ast.Sub(Ast.Ident("x"), Ast.Const(1))
 
-    val expected = List(Asm.LPush(1), Asm.Push(1), Asm.Sub)
+    val expected = List("LPush 1", "Push 1", "Sub")
 
     val (insns, newVars) = Reifier.reify(sub, vars)
 
@@ -51,7 +51,7 @@ class ReifierTest extends FunSpec {
     val vars = List("y", "x")
     val mul = Ast.Mul(Ast.Ident("x"), Ast.Ident("y"))
 
-    val expected = List(Asm.LPush(1), Asm.LPush(1), Asm.Mul)
+    val expected = List("LPush 1", "LPush 1", "Mul")
 
     val (insns, newVars) = Reifier.reify(mul, vars)
 
@@ -63,7 +63,7 @@ class ReifierTest extends FunSpec {
     val vars = List("y", "x")
     val div = Ast.Div(Ast.Ident("x"), Ast.Ident("y"))
 
-    val expected = List(Asm.LPush(1), Asm.LPush(1), Asm.Div)
+    val expected = List("LPush 1", "LPush 1", "Div")
 
     val (insns, newVars) = Reifier.reify(div, vars)
 
@@ -83,15 +83,15 @@ class ReifierTest extends FunSpec {
     )
 
     val expected = List(
-        Asm.Push(1),    // decl x = 1
-        Asm.Push(2),    // decl x = 2
-        Asm.LPush(1),   // load x for add
-        Asm.LPush(1),   // load y for add
-        Asm.Add,
-        Asm.Pop,        // clear result of stmt
-        Asm.LPush(1),   // load x (Ident(x)
-        Asm.Assign(0),  // push final value down for return
-        Asm.Assign(0)   // ""
+        "Push 1",    // decl x = 1
+        "Push 2",    // decl x = 2
+        "LPush 1",   // load x for add
+        "LPush 1",   // load y for add
+        "Add",
+        "Pop",        // clear result of stmt
+        "LPush 1",   // load x (Ident(x)
+        "Assign 0",  // push final value down for return
+        "Assign 0"   // ""
     )
 
     val (insns, newVars) = Reifier.reify(block, vars)
