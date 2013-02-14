@@ -15,9 +15,7 @@ object Reifier {
 
   def reify(node: Ast.Node, vars: List[String] = Nil): (List[Asm.Insn], List[String]) = node match {
 
-    case Ast.Declare(name, None) =>
-      (List(Asm.Push(null)), name :: vars)
-    case Ast.Declare(name, Some(rhs)) =>
+    case Ast.Declare(name, rhs) =>
       (reify(rhs, vars)._1, name :: vars)
 
     case Ast.Ident(name) => vars.indexOf(name) match {
@@ -44,6 +42,29 @@ object Reifier {
     case Ast.Div(lhs, rhs) =>
       val insns = reify(lhs, vars)._1 ++ reify(rhs, "#nil" :: vars)._1 ++ List(Asm.Div)
       (insns, vars)
+
+    case Ast.Block(stmts, result) =>
+      val initVars = vars
+      // accumulate instructions and vars
+      val (insns, endVars) = stmts.foldLeft((List[List[Asm.Insn]](), initVars)) {
+        case ((insnsSoFar, varsSoFar), decl: Ast.Declare) =>
+          val (declInsns, newVars) = reify(decl, varsSoFar)
+          (declInsns :: insnsSoFar, newVars)
+        case ((insnsSoFar, varsSoFar), expr: Ast.Expr) =>
+          // this is being reversed
+          (List(Asm.Pop) :: reify(expr, varsSoFar)._1 :: insnsSoFar, varsSoFar)
+      }
+
+      // get instructions for final statement (has no effect on vars)
+      val resultInsns = reify(result, endVars)._1
+
+      // push value on top down while popping for return
+      val resultPushInsns = List.range(0, endVars.size - initVars.size).map(_ => Asm.Assign(0))
+
+      // put em together proper (we've built the insns up reversed so far...
+      val finalInsns = (resultPushInsns :: resultInsns :: insns).reverse.flatten
+      (finalInsns, initVars)
   }
+
 
 }

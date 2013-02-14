@@ -5,20 +5,11 @@ import org.michajlo.pushpop.vm.Asm
 class ReifierTest extends FunSpec {
 
   it ("must properly reify a declare with a value") {
-    val declare = Ast.Declare("varname", Some(Ast.Const(1)))
+    val declare = Ast.Declare("varname", Ast.Const(1))
 
     val (insns, vars) = Reifier.reify(declare, Nil)
 
     assert(List(Asm.Push(1)) === insns)
-    assert(List("varname") === vars)
-  }
-
-  it ("must properly reify a declare without a value") {
-    val declare = Ast.Declare("varname", None)
-
-    val (insns, vars) = Reifier.reify(declare, Nil)
-
-    assert(List(Asm.Push(null)) === insns)
     assert(List("varname") === vars)
   }
 
@@ -78,5 +69,34 @@ class ReifierTest extends FunSpec {
 
     assert(expected === insns)
     assert(vars === newVars)
+  }
+
+  it ("must properly reify a block") {
+    val vars = List("x", "y")
+    val block = Ast.Block(
+        List(
+            Ast.Declare("x", Ast.Const(1)),
+            Ast.Declare("y", Ast.Const(2)),
+            Ast.Add(Ast.Ident("x"), Ast.Ident("y"))
+        ),
+        Ast.Ident("x")
+    )
+
+    val expected = List(
+        Asm.Push(1),    // decl x = 1
+        Asm.Push(2),    // decl x = 2
+        Asm.LPush(1),   // load x for add
+        Asm.LPush(1),   // load y for add
+        Asm.Add,
+        Asm.Pop,        // clear result of stmt
+        Asm.LPush(1),   // load x (Ident(x)
+        Asm.Assign(0),  // push final value down for return
+        Asm.Assign(0)   // ""
+    )
+
+    val (insns, newVars) = Reifier.reify(block, vars)
+
+    assert(expected === insns)
+    assert(vars == newVars)
   }
 }
