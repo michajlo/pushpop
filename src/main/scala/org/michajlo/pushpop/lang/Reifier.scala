@@ -19,8 +19,10 @@ object Reifier {
       (List("Push " + value), vars)
 
     case Ast.Const(value: String) =>
-      // TODO: quote string
-      (List("Push \"" + value + "\""), vars)
+      // XXX: this is the same as above, strings come here quoted because
+      //      of how the parser works, but that may change, so leaving
+      //      separate with this note as a reminder
+      (List("Push " + value), vars)
 
     case Ast.Add(lhs, rhs) =>
       val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Add")
@@ -61,12 +63,15 @@ object Reifier {
       (finalInsns, initVars)
 
     case Ast.FunctionCall(name, argExprs) =>
+      // XXX: functions shouldn't have args from rest of call
+      //      stack in scope, substitute with placeholders for reify?
       // function calls will expect args in reverse order
       val insns = pushAsArgs(argExprs.reverse, vars) ++ List("Jsr " + name)
       (insns, vars)
 
     case Ast.Function(name, args, body) =>
       val label = name + ":"
+      // XXX: vars should always be empty here by present definition
       val bodyInsns = reify(body, args ++ vars)._1
       val resultPushInsns = args.map(_ => "Assign 0")
       (label :: (bodyInsns ++ resultPushInsns ++ List("Ret")), vars)

@@ -1,9 +1,42 @@
 package org.michajlo.pushpop.lang
 import scala.util.parsing.combinator.JavaTokenParsers
-
 import Ast._
+import java.io.StringReader
+import org.michajlo.pushpop.vm.Asm
+import java.io.Reader
 
-object LangParser extends JavaTokenParsers {
+object LangParser {
+
+  def parse(source: String): Program = parse(new StringReader(source))
+
+  def parse(source: Reader): Program =
+    (new LangParser).parse(source)
+}
+
+class LangParser extends JavaTokenParsers {
+
+   /**
+   * Load program from a string
+   *
+   * @param source code
+   *
+   * @return the Program ast represented by source code
+   */
+  def parse(assembly: String): Program = parse(new StringReader(assembly))
+
+  /**
+   * Load source from a reader. Throws IllegalArgument on parse error,
+   * IllegalStateException on bad code structure
+   *
+   * @param source Reader from which source can be read
+   *
+   * @return Program AST representation
+   */
+  def parse(assembly: Reader): Program = parseAll(program, assembly) match {
+    case Success(ast, _) => ast
+    case nonSuccess => throw new IllegalArgumentException("Error parsing source: " + nonSuccess)
+  }
+
 
   def constInt: Parser[Const] = wholeNumber ^^ { i => Const(i.toInt) }
 
