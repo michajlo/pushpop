@@ -59,9 +59,9 @@ class LangParser extends JavaTokenParsers {
     case "/" => (lhs, rhs) => Div(lhs, rhs)
   })
 
-  def arithAtom: Parser[Expr] = (constInt | identRef | "(" ~> arithExpr <~ ")")
+  def arithAtom: Parser[Expr] = (block | funCall | constInt | identRef | "(" ~> arithExpr <~ ")")
 
-  def expr: Parser[Expr] = (funCall | arithExpr | constInt | constString | identRef)
+  def expr: Parser[Expr] = (block | arithExpr | funCall | constInt | constString | identRef)
 
   def declare: Parser[Declare] = "let" ~> (ident ~ ":=" ~ expr) ^^ {
     case name ~ ":=" ~ v => Declare(name, v)
