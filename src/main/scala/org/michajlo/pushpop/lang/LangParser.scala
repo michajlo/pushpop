@@ -49,7 +49,19 @@ class LangParser extends JavaTokenParsers {
     case name ~ "(" ~ argExprs ~ ")" => FunctionCall(name, argExprs)
   }
 
-  def expr: Parser[Expr] = (constInt | constString | funCall | identRef)
+  def arithExpr: Parser[Expr] = chainl1(multOrDivExpr, ("+" | "-") ^^ {
+    case "+" => (lhs, rhs) => Add(lhs, rhs)
+    case "-" => (lhs, rhs) => Sub(lhs, rhs)
+  })
+
+  def multOrDivExpr: Parser[Expr] = chainl1(arithAtom, ("*" | "/") ^^ {
+    case "*" => (lhs, rhs) => Mul(lhs, rhs)
+    case "/" => (lhs, rhs) => Div(lhs, rhs)
+  })
+
+  def arithAtom: Parser[Expr] = (constInt | identRef | "(" ~> arithExpr <~ ")")
+
+  def expr: Parser[Expr] = (funCall | arithExpr | constInt | constString | identRef)
 
   def declare: Parser[Declare] = "let" ~> (ident ~ ":=" ~ expr) ^^ {
     case name ~ ":=" ~ v => Declare(name, v)
