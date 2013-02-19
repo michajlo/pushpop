@@ -71,6 +71,54 @@ class ReifierTest extends FunSpec {
     assert(vars === newVars)
   }
 
+  it ("must properly reify gt nodes") {
+    val vars = List("y", "x")
+    val gt = Ast.Gt(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List("LPush 1", "LPush 1", "CmpGt")
+
+    val (insns, newVars) = Reifier.reify(gt, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
+
+  it ("must properly reify gte nodes") {
+    val vars = List("y", "x")
+    val gte = Ast.Gte(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List("LPush 1", "LPush 1", "CmpGte")
+
+    val (insns, newVars) = Reifier.reify(gte, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
+
+  it ("must properly reify eq nodes") {
+    val vars = List("y", "x")
+    val eq = Ast.Eq(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List("LPush 1", "LPush 1", "CmpEq")
+
+    val (insns, newVars) = Reifier.reify(eq, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
+
+  it ("must properly reify neq nodes") {
+    val vars = List("y", "x")
+    val neq = Ast.Neq(Ast.Ident("x"), Ast.Ident("y"))
+
+    val expected = List("LPush 1", "LPush 1", "CmpNeq")
+
+    val (insns, newVars) = Reifier.reify(neq, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars)
+  }
+
   it ("must properly reify a block") {
     val vars = List("x", "y")
     val block = Ast.Block(

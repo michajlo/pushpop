@@ -40,6 +40,22 @@ object Reifier {
       val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Div")
       (insns, vars)
 
+    case Ast.Gt(lhs, rhs) =>
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("CmpGt")
+      (insns, vars)
+
+    case Ast.Gte(lhs, rhs) =>
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("CmpGte")
+      (insns, vars)
+
+    case Ast.Eq(lhs, rhs) =>
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("CmpEq")
+      (insns, vars)
+
+    case Ast.Neq(lhs, rhs) =>
+      val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("CmpNeq")
+      (insns, vars)
+
     case Ast.Block(stmts, result) =>
       val initVars = vars
       // accumulate instructions and vars
@@ -61,6 +77,20 @@ object Reifier {
       // put em together proper (we've built the insns up reversed so far...
       val finalInsns = (resultPushInsns :: resultInsns :: insns).reverse.flatten
       (finalInsns, initVars)
+
+    // UNTESTED, for now...
+    case Ast.IfElse(cond, ifTrue, ifFalse) =>
+      // XXX: this is gross, think this indicates a need to refactor this guy...
+      val condInsns = reify(cond, vars)._1
+      val ifTrueInsns = reify(ifTrue, vars)._1
+      val ifFalseInsns = reify(ifFalse, vars)._1
+      val labelPrefix = ("cond_" + math.random).replace(".", "_")
+      val falseLabel = labelPrefix + "_F"
+      val endLabel = labelPrefix + "_END"
+      val insns = (condInsns ++ List("JmpF " + falseLabel) ++
+          ifTrueInsns ++ List("Jmp " + endLabel) ++
+          List(falseLabel + ":") ++ ifFalseInsns ++ List(endLabel + ":"))
+      (insns, vars)
 
     case Ast.FunctionCall(name, argExprs) =>
       // XXX: functions shouldn't have args from rest of call

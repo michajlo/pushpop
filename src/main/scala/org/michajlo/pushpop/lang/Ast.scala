@@ -43,9 +43,19 @@ object Ast {
   case class Div(lhs: Expr, rhs: Expr) extends Expr
 
   /**
+   * Comparison expressions
+   */
+  case class Gt(lhs: Expr, rhs: Expr) extends Expr
+  case class Gte(lhs: Expr, rhs: Expr) extends Expr
+  case class Eq(lhs: Expr, rhs: Expr) extends Expr
+  case class Neq(lhs: Expr, rhs: Expr) extends Expr
+
+  /**
    * A chunk of sequentially executed code, returning a value
    */
   case class Block(stmts: List[Stmt], value: Expr) extends Expr
+
+  case class IfElse(cond: Expr, ifTrue: Block, ifFlase: Block) extends Expr
 
   /**
    * Function declaration
