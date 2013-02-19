@@ -66,8 +66,8 @@ class LangParser extends JavaTokenParsers {
       ("<=" | "<" | ">=" | ">" | "==" | "!=") ~
       (block | arithExpr | funCall | constInt | identRef) ^^ {
 
-    case lhs ~ "<=" ~ rhs => Gt(rhs, lhs)
-    case lhs ~ "<" ~ rhs => Gte(rhs, lhs)
+    case lhs ~ "<=" ~ rhs => Gte(rhs, lhs)
+    case lhs ~ "<" ~ rhs => Gt(rhs, lhs)
     case lhs ~ ">=" ~ rhs => Gte(lhs, rhs)
     case lhs ~ ">" ~ rhs => Gt(lhs, rhs)
     case lhs ~ "==" ~ rhs => Eq(lhs, rhs)
