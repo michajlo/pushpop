@@ -51,29 +51,55 @@ class VirtualMachine {
           case "exit" =>
         }
 
-        case Add => (dataStack.pop(), dataStack.pop()) match {
-          case (a1: Int, a2: Int) =>
-            dataStack.push(a1 + a2)
-            execute(insns, insnPtr + 1)
-        }
+        case Add =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l + r)
+          execute(insns, insnPtr + 1)
 
-        case Sub => (dataStack.pop(), dataStack.pop()) match {
-          case (r: Int, l: Int) =>
-            dataStack.push(l - r)
-            execute(insns, insnPtr + 1)
-        }
+        case Sub =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l - r)
+          execute(insns, insnPtr + 1)
 
-        case Mul => (dataStack.pop(), dataStack.pop()) match {
-          case (m1: Int, m2: Int) =>
-            dataStack.push(m1 * m2)
-            execute(insns, insnPtr + 1)
-        }
+        case Mul =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l * r)
+          execute(insns, insnPtr + 1)
 
-        case Div => (dataStack.pop(), dataStack.pop()) match {
-          case (r: Int, l: Int) =>
-            dataStack.push(l / r)
-            execute(insns, insnPtr + 1)
-        }
+        case Div =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l / r)
+          execute(insns, insnPtr + 1)
+
+        case CmpGt =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l > r)
+          execute(insns, insnPtr + 1)
+
+        case CmpGte =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l >= r)
+          execute(insns, insnPtr + 1)
+
+        case CmpLt =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l < r)
+          execute(insns, insnPtr + 1)
+
+        case CmpLte =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l <= r)
+          execute(insns, insnPtr + 1)
+
+        case CmpEq =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l == r)
+          execute(insns, insnPtr + 1)
+
+        case CmpNeq =>
+          val (r, l) = popTwoInts()
+          dataStack.push(l != r)
+          execute(insns, insnPtr + 1)
 
         case Jsr(newInsnPtr) =>
           insnPtrStack.push(insnPtr + 1)
@@ -84,6 +110,12 @@ class VirtualMachine {
         }
 
         case Jmp(newInsnPtr) => execute(insns, newInsnPtr)
+
+        case JmpT(newInsnPtr) =>
+          execute(insns, if (dataStack.pop().asInstanceOf[Boolean]) newInsnPtr else insnPtr + 1)
+
+        case JmpF(newInsnPtr) =>
+          execute(insns, if (!dataStack.pop().asInstanceOf[Boolean]) newInsnPtr else insnPtr + 1)
 
         case JmpZ(newInsnPtr) =>
           execute(insns, if (dataStack.peek == 0) newInsnPtr else insnPtr + 1)
@@ -97,5 +129,12 @@ class VirtualMachine {
           execute(insns, insnPtr + 1)
       }
     }
+  }
+
+  private def popTwoInts(): (Int, Int) = (dataStack.pop(), dataStack.pop()) match {
+    case (r: Int, l: Int) => (r, l)
+    case (fst, scnd) =>
+      throw new IllegalStateException("Expected two ints on the stack, but got: " +
+          fst + "(" + fst.getClass +") and " + scnd + "(" + scnd.getClass + ")" )
   }
 }

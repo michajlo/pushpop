@@ -38,4 +38,36 @@ class VirtualMachineControlFlowTest extends FunSpec {
 
     assert(vm.dataStack.pop() == 42)
   }
+
+  it ("must jump on JmpT if the top of the stack is true, popping the top") {
+    val vm = new VirtualMachine
+
+    vm.run(List(Push(42), Push(true), JmpT(4), Push(0)))
+
+    assert(42 === vm.dataStack.pop())
+  }
+
+  it ("must not jump on JmpT if the top of the stack is false, popping the top") {
+    val vm = new VirtualMachine
+
+    vm.run(List(Push(42), Push(false), JmpT(6), Push(0)))
+
+    assert(0 === vm.dataStack.pop())
+  }
+
+  it ("must jump on JmpF if the top of the stack is false, popping the top") {
+    val vm = new VirtualMachine
+
+    vm.run(List(Push(42), Push(false), JmpF(4), Push(0)))
+
+    assert(42 === vm.dataStack.pop())
+  }
+
+  it ("must not jump on JmpF if the top of the stack is true popping the top") {
+    val vm = new VirtualMachine
+
+    vm.run(List(Push(42), Push(true), JmpF(6), Push(0)))
+
+    assert(0 === vm.dataStack.pop())
+  }
 }

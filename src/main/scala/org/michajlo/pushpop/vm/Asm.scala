@@ -64,6 +64,55 @@ object Asm {
   case object Ret extends Insn
 
   /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * greater than the first, false otherwise
+   */
+  case object CmpGt extends Insn
+
+  /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * greater than or equal to the first, false otherwise
+   */
+  case object CmpGte extends Insn
+
+  // XXX: can LT/LTE be eliminated and use GT/GTE for everything?
+  /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * less than the first, false otherwise
+   */
+  case object CmpLt extends Insn
+
+  /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * less than or equal to the first, false otherwise
+   */
+  case object CmpLte extends Insn
+
+  /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * equal to the first, false otherwise
+   */
+  case object CmpEq extends Insn
+
+  /**
+   * Pushes false onto the stack if the 2nd item on the stack is
+   * not equal to the first, false otherwise
+   */
+  case object CmpNeq extends Insn
+
+  /**
+   * Pops the top item off the stack, if true goes to newInsnPtr,
+   * if false resumes execution at the next insn pointer
+   */
+  case class JmpT(newInsnPtr: Int) extends Insn
+
+ /**
+   * Pops the top item off the stack, if true goes to newInsnPtr,
+   * if false resumes execution at the next insn pointer
+   */
+  case class JmpF(newInsnPtr: Int) extends Insn
+
+  /**
    * Unconditionally jump to newInsnPtr
    */
   case class Jmp(newInsnPtr: Int) extends Insn
@@ -73,6 +122,9 @@ object Asm {
    *
    * Does not pop the value on the top of the stack, but this may change
    * pending patterns that emerge
+   *
+   * XXX: probably eliminate in favor of boolean jumps, nzp jumps don't
+   * really make sense here...
    */
   case class JmpZ(newInsnPtr: Int) extends Insn
 
