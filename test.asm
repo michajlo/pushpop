@@ -41,7 +41,10 @@ sum:
   Push 0        ; sum = 0
 sum_loop:
   LPush 1       ; load i
-  JmpZ sum_ret  ; if i == 0 goto end
+  Push 0
+  CmpGt         ; check i > 0
+  JmpF sum_ret  ; if true goto end
+  LPush 1       ; load i
   Add           ; sum = sum + i
   LPush 1
   Push -1
@@ -49,6 +52,5 @@ sum_loop:
   Assign 1      ; i = i - 1
   Jmp sum_loop
 sum_ret:
-  Pop           ; pop i (on top of stack from 0 check)
   Assign 0      ; place sum for return
   Ret
