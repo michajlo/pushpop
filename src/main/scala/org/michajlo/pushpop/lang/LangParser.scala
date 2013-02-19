@@ -61,7 +61,24 @@ class LangParser extends JavaTokenParsers {
 
   def arithAtom: Parser[Expr] = (block | funCall | constInt | identRef | "(" ~> arithExpr <~ ")")
 
-  def expr: Parser[Expr] = (block | arithExpr | funCall | constInt | constString | identRef)
+  def cmpExpr: Parser[Expr] =
+    (block | arithExpr | funCall | constInt | identRef) ~
+      ("<=" | "<" | ">=" | ">" | "==" | "!=") ~
+      (block | arithExpr | funCall | constInt | identRef) ^^ {
+
+    case lhs ~ "<=" ~ rhs => Gt(rhs, lhs)
+    case lhs ~ "<" ~ rhs => Gte(rhs, lhs)
+    case lhs ~ ">=" ~ rhs => Gte(lhs, rhs)
+    case lhs ~ ">" ~ rhs => Gt(lhs, rhs)
+    case lhs ~ "==" ~ rhs => Eq(lhs, rhs)
+    case lhs ~ "!=" ~ rhs => Neq(lhs, rhs)
+  }
+
+  def ifElse: Parser[IfElse] = "if" ~ "(" ~ cmpExpr ~ ")" ~ block ~ "else" ~ block ^^ {
+    case _ ~ _ ~ cmpExpr ~ _ ~ ifTrue ~ _ ~ ifFalse => IfElse(cmpExpr, ifTrue, ifFalse)
+  }
+
+  def expr: Parser[Expr] = (block | ifElse | arithExpr | funCall | constInt | constString | identRef)
 
   def declare: Parser[Declare] = "let" ~> (ident ~ ":=" ~ expr) ^^ {
     case name ~ ":=" ~ v => Declare(name, v)
