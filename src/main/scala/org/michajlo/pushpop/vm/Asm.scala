@@ -64,38 +64,38 @@ object Asm {
   case object Ret extends Insn
 
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * greater than the first, false otherwise
    */
   case object CmpGt extends Insn
 
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * greater than or equal to the first, false otherwise
    */
   case object CmpGte extends Insn
 
   // XXX: can LT/LTE be eliminated and use GT/GTE for everything?
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * less than the first, false otherwise
    */
   case object CmpLt extends Insn
 
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * less than or equal to the first, false otherwise
    */
   case object CmpLte extends Insn
 
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * equal to the first, false otherwise
    */
   case object CmpEq extends Insn
 
   /**
-   * Pushes false onto the stack if the 2nd item on the stack is
+   * Pushes true onto the stack if the 2nd item on the stack is
    * not equal to the first, false otherwise
    */
   case object CmpNeq extends Insn
