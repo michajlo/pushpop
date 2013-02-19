@@ -15,9 +15,17 @@ class PlaintextAsmParserTest extends FunSpec {
       Sub
       Mul
       Div
+      CmpGt
+      CmpGte
+      CmpLt
+      CmpLte
+      CmpEq
+      CmpNeq
       CallBIF
       Jmp 1
       JmpZ 2
+      JmpT 6
+      JmpF 7
       Assign 3
       LPush 4
       Jsr 5
@@ -32,9 +40,17 @@ class PlaintextAsmParserTest extends FunSpec {
         Asm.Sub,
         Asm.Mul,
         Asm.Div,
+        Asm.CmpGt,
+        Asm.CmpGte,
+        Asm.CmpLt,
+        Asm.CmpLte,
+        Asm.CmpEq,
+        Asm.CmpNeq,
         Asm.CallBIF,
         Asm.Jmp(1),
         Asm.JmpZ(2),
+        Asm.JmpT(6),
+        Asm.JmpF(7),
         Asm.Assign(3),
         Asm.LPush(4),
         Asm.Jsr(5),
@@ -54,12 +70,18 @@ class PlaintextAsmParserTest extends FunSpec {
         Jmp label2
       label3:
         JmpZ label3
+      label4:
+        JmpT label4
+      label5:
+        JmpF label5
       """
 
     val expected = List(
         Asm.Jsr(0),
         Asm.Jmp(1),
-        Asm.JmpZ(2))
+        Asm.JmpZ(2),
+        Asm.JmpT(3),
+        Asm.JmpF(4))
 
     val insns = PlaintextAsmParser.parse(assembly)
 

@@ -64,10 +64,18 @@ class PlaintextAsmParser extends JavaTokenParsers {
     ("Sub" ^^ { _ => Asm.Sub }) |
     ("Mul" ^^ { _ => Asm.Mul }) |
     ("Div" ^^ { _ => Asm.Div }) |
+    ("CmpGte" ^^ { _ => Asm.CmpGte }) |
+    ("CmpGt" ^^ { _ => Asm.CmpGt }) |
+    ("CmpLte" ^^ { _ => Asm.CmpLte }) |
+    ("CmpLt" ^^ { _ => Asm.CmpLt }) |
+    ("CmpEq" ^^ { _ => Asm.CmpEq }) |
+    ("CmpNeq" ^^ { _ => Asm.CmpNeq }) |
     ("CallBIF" ^^ { _ => Asm.CallBIF } ) |
     ("Jsr" ~> wholeNumber ^^ { n => Asm.Jsr(n.toInt) }) |
     ("Ret" ^^ { _ => Asm.Ret }) |
     ("JmpZ" ~> wholeNumber ^^ { n => Asm.JmpZ(n.toInt) }) |
+    ("JmpT" ~> wholeNumber ^^ {n => Asm.JmpT(n.toInt) }) |
+    ("JmpF" ~> wholeNumber ^^ {n => Asm.JmpF(n.toInt) }) |
     ("Jmp" ~> wholeNumber ^^ { n => Asm.Jmp(n.toInt) })
 
   // a fullInsn is simply a wrapper to Asm.Insn so it falls under the Intermediary type
@@ -77,6 +85,8 @@ class PlaintextAsmParser extends JavaTokenParsers {
   private def partialInsn: Parser[PartialInsn] =
     ("Jsr" ~> ident ^^ { lbl => PartialInsn("Jsr", Some(lbl)) }) |
     ("JmpZ" ~> ident ^^ { lbl => PartialInsn("JmpZ", Some(lbl) )}) |
+    ("JmpT" ~> ident ^^ {lbl => PartialInsn("JmpT", Some(lbl)) }) |
+    ("JmpF" ~> ident ^^ {lbl => PartialInsn("JmpF", Some(lbl)) }) |
     ("Jmp" ~> ident ^^ { lbl => PartialInsn("Jmp", Some(lbl)) })
 
 
@@ -99,6 +109,8 @@ class PlaintextAsmParser extends JavaTokenParsers {
     case PartialInsn("Jsr", Some(lbl: String)) => Asm.Jsr(labelOffsets(lbl))
     case PartialInsn("Jmp", Some(lbl: String)) => Asm.Jmp(labelOffsets(lbl))
     case PartialInsn("JmpZ", Some(lbl: String)) => Asm.JmpZ(labelOffsets(lbl))
+    case PartialInsn("JmpT", Some(lbl: String)) => Asm.JmpT(labelOffsets(lbl))
+    case PartialInsn("JmpF", Some(lbl: String)) => Asm.JmpF(labelOffsets(lbl))
   }
 
 }
