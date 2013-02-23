@@ -165,6 +165,29 @@ class ReifierTest extends FunSpec {
     assert(vars == newVars)
   }
 
+  it ("must properly reify a tail call") {
+    // x, y, and z are function args, a and b are local scope
+    val vars = List("a", "b", "z", "y", "x")
+    val tailCall = Ast.TailCall("foo", List(Ast.Const(1), Ast.Ident("x"), Ast.Ident("b")))
+
+    val expected = List(
+        "LPush 1",  // b
+        "Assign 4",
+        "LPush 4",  // x
+        "Assign 3",
+        "Push 1",   // 1
+        "Assign 2",
+        "Pop",
+        "Pop",
+        "Jmp foo"
+    )
+
+    val (insns, newVars) = Reifier.reify(tailCall, vars)
+
+    assert(expected === insns)
+    assert(vars === newVars) // XXX: <- this doesn't really matter
+  }
+
   it ("must properly reify a function") {
     val vars = List("x", "y")
     val fun = Ast.Function("foo", List("arg1", "arg2"),

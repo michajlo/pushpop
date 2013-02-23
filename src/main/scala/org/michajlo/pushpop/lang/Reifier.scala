@@ -93,16 +93,25 @@ object Reifier {
       (insns, vars)
 
     case Ast.FunctionCall(name, argExprs) =>
-      // XXX: functions shouldn't have args from rest of call
-      //      stack in scope, substitute with placeholders for reify?
       // function calls will expect args in reverse order
       val insns = pushAsArgs(argExprs.reverse, vars) ++ List("Jsr " + name)
       (insns, vars)
 
+    case Ast.TailCall(name, argExprs) =>
+      val argsInsns = argExprs.map(ae => reify(ae, vars)._1)
+      // XXX: this is gross, get it working then fix
+      val argSetInsns = argsInsns.reverse.foldLeft((List[List[String]](), vars.length - 1)) {
+        case ((insnsSoFar, varOff), argInsns) =>
+          val newInsnsSoFar = List("Assign " + varOff) :: argInsns :: insnsSoFar
+          (newInsnsSoFar, varOff - 1)
+      }._1.reverse.flatten
+      val pops = List.range(0, vars.size - argExprs.size).map(_ => "Pop")
+      (argSetInsns ++ pops ++ List("Jmp " + name), vars)
+
     case Ast.Function(name, args, body) =>
       val label = name + ":"
       // XXX: vars should always be empty here by present definition
-      val bodyInsns = reify(body, args ++ vars)._1
+      val bodyInsns = reify(body, args)._1
       val resultPushInsns = args.map(_ => "Assign 0")
       (label :: (bodyInsns ++ resultPushInsns ++ List("Ret")), vars)
 

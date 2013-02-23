@@ -68,6 +68,11 @@ object Ast {
   case class FunctionCall(name: String, args: List[Expr]) extends Expr
 
   /**
+   * Special case of function call for tail recursion
+   */
+  case class TailCall(name: String, args: List[Expr]) extends Expr
+
+  /**
    * High level description of a program
    */
   case class Program(functions: List[Function]) extends Node
