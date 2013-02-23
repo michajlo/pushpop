@@ -98,15 +98,16 @@ object Reifier {
       (insns, vars)
 
     case Ast.TailCall(name, argExprs) =>
-      val argsInsns = argExprs.map(ae => reify(ae, vars)._1)
-      // XXX: this is gross, get it working then fix
-      val argSetInsns = argsInsns.reverse.foldLeft((List[List[String]](), vars.length - 1)) {
-        case ((insnsSoFar, varOff), argInsns) =>
-          val newInsnsSoFar = List("Assign " + varOff) :: argInsns :: insnsSoFar
-          (newInsnsSoFar, varOff - 1)
-      }._1.reverse.flatten
+      val argsInsns = pushAsArgs(argExprs.reverse, vars)
+
+      // assigns into the right slots
+      val argOffsets = (vars.size - 1)
+      val assignInsns = List.range(0, argExprs.size).map(_ => "Assign " + argOffsets)
+
+      // pop off local vars
       val pops = List.range(0, vars.size - argExprs.size).map(_ => "Pop")
-      (argSetInsns ++ pops ++ List("Jmp " + name), vars)
+
+      (argsInsns ++ assignInsns ++ pops ++ List("Jmp " + name), vars)
 
     case Ast.Function(name, args, body) =>
       val label = name + ":"

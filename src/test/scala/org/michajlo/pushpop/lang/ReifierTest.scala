@@ -172,11 +172,11 @@ class ReifierTest extends FunSpec {
 
     val expected = List(
         "LPush 1",  // b
-        "Assign 4",
-        "LPush 4",  // x
-        "Assign 3",
+        "LPush 5",  // x
         "Push 1",   // 1
-        "Assign 2",
+        "Assign 4",
+        "Assign 4",
+        "Assign 4",
         "Pop",
         "Pop",
         "Jmp foo"
