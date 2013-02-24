@@ -10,13 +10,18 @@ import java.io.FileWriter
 import org.michajlo.pushpop.lang.TailCallOptimizer
 
 /**
- * Simple runner, invoke via:
+ * Simple runner
  *
- *   scala ... org.michajlo.pushpop.PushPop run <asm_file>
+ * TODO: make this more idiomatic...
  */
 object PushPop {
 
-  def main(args: Array[String]) = args match {
+  def main(args: Array[String]) {
+    val exitCode = doRun(args)
+    println("Exited with: " + exitCode)
+  }
+
+  def doRun(args: Array[String]) = args match {
     case Array("run", asmFile) =>
       val fileReader = new FileReader(new File(asmFile))
       val insns = PlaintextAsmParser.parse(fileReader)
@@ -45,5 +50,9 @@ object PushPop {
       asm.foreach(op => { out.append(op); out.append("\n") })
       out.close()
       0
+
+    case _ =>
+      Console.err.println("Usage: <run|compile|compile-w-tailcalls> file")
+      1
   }
 }

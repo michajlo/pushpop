@@ -1,0 +1,13 @@
+#!/bin/bash
+
+base=`dirname $0`
+base=`cd $base/../; pwd`
+
+
+CP=${CLASSPATH:=.}
+
+for j in `ls $base/lib/*.jar`; do
+    CP="$j:$CP"
+done
+
+exec java -cp "$CP" org.michajlo.pushpop.PushPop $@
