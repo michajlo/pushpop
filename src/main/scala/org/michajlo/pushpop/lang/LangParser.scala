@@ -37,6 +37,8 @@ class LangParser extends JavaTokenParsers {
     case nonSuccess => throw new IllegalArgumentException("Error parsing source: " + nonSuccess)
   }
 
+  // treat comments as white space
+  override val whiteSpace = """(\s*(//[^\n]*\n)?)+""".r
 
   def constInt: Parser[Const] = wholeNumber ^^ { i => Const(i.toInt) }
 
