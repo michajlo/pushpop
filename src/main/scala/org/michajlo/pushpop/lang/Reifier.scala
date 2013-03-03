@@ -10,19 +10,19 @@ object Reifier {
       (reify(rhs, vars)._1, name :: vars)
 
     case Ast.Ident(name) => vars.indexOf(name) match {
-      case -1 => throw new IllegalStateException("var " + name + " undefined")
+      case -1 => throw new IllegalStateException(s"var $name undefined")
       case n =>
-        (List("LPush " + n), vars)
+        (List(s"LPush $n"), vars)
     }
 
     case Ast.Const(value: Int) =>
-      (List("Push " + value), vars)
+      (List(s"Push $value"), vars)
 
     case Ast.Const(value: String) =>
       // XXX: this is the same as above, strings come here quoted because
       //      of how the parser works, but that may change, so leaving
       //      separate with this note as a reminder
-      (List("Push " + value), vars)
+      (List(s"Push $value"), vars)
 
     case Ast.Add(lhs, rhs) =>
       val insns = pushAsArgs(List(lhs, rhs), vars) ++ List("Add")
@@ -84,17 +84,17 @@ object Reifier {
       val condInsns = reify(cond, vars)._1
       val ifTrueInsns = reify(ifTrue, vars)._1
       val ifFalseInsns = reify(ifFalse, vars)._1
-      val labelPrefix = ("cond_" + math.random).replace(".", "_")
-      val falseLabel = labelPrefix + "_F"
-      val endLabel = labelPrefix + "_END"
-      val insns = (condInsns ++ List("JmpF " + falseLabel) ++
-          ifTrueInsns ++ List("Jmp " + endLabel) ++
-          List(falseLabel + ":") ++ ifFalseInsns ++ List(endLabel + ":"))
+      val labelPrefix = s"cond_${math.random}".replace(".", "_")
+      val falseLabel = s"${labelPrefix}_F"
+      val endLabel = s"${labelPrefix}_END"
+      val insns = (condInsns ++ List(s"JmpF $falseLabel") ++
+          ifTrueInsns ++ List(s"Jmp $endLabel") ++
+          List(s"$falseLabel:") ++ ifFalseInsns ++ List(s"$endLabel:"))
       (insns, vars)
 
     case Ast.FunctionCall(name, argExprs) =>
       // function calls will expect args in reverse order
-      val insns = pushAsArgs(argExprs.reverse, vars) ++ List("Jsr " + name)
+      val insns = pushAsArgs(argExprs.reverse, vars) ++ List(s"Jsr $name")
       (insns, vars)
 
     case Ast.TailCall(name, argExprs) =>
@@ -102,12 +102,12 @@ object Reifier {
 
       // assigns into the right slots
       val argOffsets = (vars.size - 1)
-      val assignInsns = List.range(0, argExprs.size).map(_ => "Assign " + argOffsets)
+      val assignInsns = List.range(0, argExprs.size).map(_ => s"Assign $argOffsets")
 
       // pop off local vars
       val pops = List.range(0, vars.size - argExprs.size).map(_ => "Pop")
 
-      (argsInsns ++ assignInsns ++ pops ++ List("Jmp " + name), vars)
+      (argsInsns ++ assignInsns ++ pops ++ List(s"Jmp $name"), vars)
 
     case Ast.Function(name, args, body) =>
       val label = name + ":"
