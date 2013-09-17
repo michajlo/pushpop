@@ -35,7 +35,7 @@ object PushPop {
     case Array("compile", sourceFile) =>
       val fileReader = new FileReader(new File(sourceFile))
       val ast = LangParser.parse(fileReader)
-      val asm = Reifier.reify(ast, Nil)._1
+      val asm = Reifier.reify(ast, Nil).insns
       val out = new FileWriter(sourceFile + ".asm", false)
       asm.foreach(op => { out.append(op); out.append("\n") })
       out.close()
@@ -45,7 +45,7 @@ object PushPop {
       val fileReader = new FileReader(new File(sourceFile))
       val ast = LangParser.parse(fileReader)
       val optimizedAst = TailCallOptimizer.optimize(ast)
-      val asm = Reifier.reify(optimizedAst, Nil)._1
+      val asm = Reifier.reify(optimizedAst, Nil).insns
       val out = new FileWriter(sourceFile + ".asm", false)
       asm.foreach(op => { out.append(op); out.append("\n") })
       out.close()

@@ -7,7 +7,7 @@ class ReifierTest extends FunSpec {
   it ("must properly reify a declare with an int value") {
     val declare = Ast.Declare("varname", Ast.Const(1))
 
-    val (insns, vars) = Reifier.reify(declare, Nil)
+    val Reifier.Context(insns, vars) = Reifier.reify(declare, Nil)
 
     assert(List("Push 1") === insns)
     assert(List("varname") === vars)
@@ -17,7 +17,7 @@ class ReifierTest extends FunSpec {
     val ident = Ast.Ident("varname")
 
     val vars = List("notvar", "varname")
-    val (insns, newVars) = Reifier.reify(ident, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(ident, vars)
 
     assert(List("LPush 1") === insns)
     assert(vars === newVars)
@@ -29,7 +29,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "Push 1", "Add")
 
-    val (insns, newVars) = Reifier.reify(add, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(add, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -41,7 +41,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "Push 1", "Sub")
 
-    val (insns, newVars) = Reifier.reify(sub, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(sub, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -53,7 +53,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "Mul")
 
-    val (insns, newVars) = Reifier.reify(mul, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(mul, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -65,7 +65,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "Div")
 
-    val (insns, newVars) = Reifier.reify(div, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(div, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -77,7 +77,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "CmpGt")
 
-    val (insns, newVars) = Reifier.reify(gt, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(gt, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -89,7 +89,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "CmpGte")
 
-    val (insns, newVars) = Reifier.reify(gte, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(gte, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -101,7 +101,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "CmpEq")
 
-    val (insns, newVars) = Reifier.reify(eq, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(eq, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -113,7 +113,7 @@ class ReifierTest extends FunSpec {
 
     val expected = List("LPush 1", "LPush 1", "CmpNeq")
 
-    val (insns, newVars) = Reifier.reify(neq, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(neq, vars)
 
     assert(expected === insns)
     assert(vars === newVars)
@@ -142,7 +142,7 @@ class ReifierTest extends FunSpec {
         "Assign 0"   // ""
     )
 
-    val (insns, newVars) = Reifier.reify(block, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(block, vars)
 
     assert(expected === insns)
     assert(vars == newVars)
@@ -159,7 +159,7 @@ class ReifierTest extends FunSpec {
         "Jsr foo"
     )
 
-    val (insns, newVars) = Reifier.reify(funcall, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(funcall, vars)
 
     assert(expected === insns)
     assert(vars == newVars)
@@ -182,7 +182,7 @@ class ReifierTest extends FunSpec {
         "Jmp foo"
     )
 
-    val (insns, newVars) = Reifier.reify(tailCall, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(tailCall, vars)
 
     assert(expected === insns)
     assert(vars === newVars) // XXX: <- this doesn't really matter
@@ -215,7 +215,7 @@ class ReifierTest extends FunSpec {
         "Ret"
     )
 
-    val (insns, newVars) = Reifier.reify(fun, vars)
+    val Reifier.Context(insns, newVars) = Reifier.reify(fun, vars)
 
     assert(expected === insns)
     assert(vars == newVars)
@@ -240,7 +240,7 @@ class ReifierTest extends FunSpec {
         "Ret"
     )
 
-    val (insns, newVars) = Reifier.reify(prog, Nil)
+    val Reifier.Context(insns, newVars) = Reifier.reify(prog, Nil)
 
     assert(expected === insns)
     assert(Nil === newVars)
